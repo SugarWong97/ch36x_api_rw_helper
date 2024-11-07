@@ -1,53 +1,64 @@
 #ifndef		_DEBUG368_H
 #define		_DEBUG368_H
 #include <windows.h>
+#include "CH367DLL.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define EEPROM_INFO_SIZE 0x20
 
-/* 命令码常量定义,请查阅25F512芯片说明书 */
-#define WREN		0x06 /* 写使能指令 */
-#define WRDI		0x04 /* 写禁止指令 */
-#define EWSR		0x50 /* 写状态寄存器使能指令 */
-#define RDSR		0x05 /* 读状态寄存器指令 */
-#define WRSR		0x01 /* 写状态寄存器指令,WEL为0不允许写 */
-#define READ		0x03 /* 读字节指令 */
-#define FAST_READ	0x0B /* 快读指令 */
-#define BP			0x02 /* 字节写指令 */
-#define AAI			0xAF /* 连接写指令 */
-#define SE			0x20 /* 扇区擦除指令 */
-#define BE			0xD8 /* 块擦除指令 */
-//#define CE			0xC7 /* 芯片擦除指令*/
-#define CE			0x60 /* 芯片擦除指令*/
-#define RMDI        0x90 /* 读厂商/设备ID指令 */
+/*============================= MEM读写 ==============================*/
+enum CH36xMemModel
+{
+     CH36xMemModel_BYTE = 0,
+     CH36xMemModel_DWORD,
+};
 
-#define SPI_BUFFER_LENGTH 0x1000 /* 每次读4096个字节 */
+struct ch36xDevEntity {
+    unsigned devIndex; /* 设备序号 */
+    char isOpened; /* 设备开关标志, 0关 1开 */
+    mPCH367_IO_REG mBaseAddr; /* I/O空间寄存器 */
+    mPCH368_MEM_REG mMemAddr;/*Mem空间寄存器*/
 
+    // 判断是CH367还是CH368
+    int isCH367;
+    int isCH368;
 
+    //判断是电平中断（1）还是边沿中断（2）
+    int intType;
 
-#define CH367_GPO_SET do{CH367mReadIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], &qbyte); CH367mWriteIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], qbyte |= 0x80);}while(0)
-#define CH367_GPO_CLR do{CH367mReadIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], &qbyte); CH367mWriteIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], qbyte &= 0x7F);}while(0)
-#define WM_INTNOTIFY (WM_USER + 1)
+    unsigned char manufacturerDeviceID[mMAX_BUFFER_LENGTH*3];
 
-void CALLBACK InterruptEvent(void); // 设备中断通知消息 
-void AddrRefresh(HWND hDialog); // 重新取基址
-void mSetI2C(HWND hDialog); // I2C读写
-void mIoWrite(HWND hDialog,int IoModel,int IoAddr);//IO读操作
-void mIoRead(HWND hDialog,int IoModel,int IoAddr);//IO写操作
-void mMemRead(HWND hDialog,int MemModel);//MEM读操作
-void mMemWrite(HWND hDialog,int MemModel);//MEM读操作
-void mConRead(HWND hDialog);//配置空间字节读
-void mConWrite(HWND hDialog);//配置空间字节写
-void mI2CRead(HWND hDialog);//I2C读
-void mI2CWrite(HWND hDialog);//I2C写
-void mInitCheckBox(HWND hDialog); // 初始化默认选中单选框 
-void mShowDevVer(HWND hDialog); //显示驱动版本号
+    char isReadEERPROM;
+    unsigned short vid;// VID(厂商标识 : Vendor ID)
+    unsigned short did;// DID(设备标识: Device ID)
+    unsigned short rid/* 只有一个字节*/;// RID(芯片版本 : Revision ID)
+    unsigned short svid;// SVID(子系统厂商标识 : Subsystem Vendor ID)
+    unsigned short sid;// SID(子系统标识 : Subsystem ID)
+};
 
 
-void mPreVerify(HWND hwnd);
+void CH36xShowDevVer(void); //获得驱动版本号
 
-int ch36xCloseDevice(int index);
+// 指定index打开ch36x设备
+bool ch36xOpenDevice(struct ch36xDevEntity * dev, unsigned int devIndex);
+
+// 关闭ch36x设备
+int ch36xCloseDevice(struct ch36xDevEntity * dev);
+
+// 配置ch36x设备是否允许32位读写（ch368默认打开此项,ch367不支持此功能）
+int ch36xMemConfig32BitRW(struct ch36xDevEntity * dev, int enable);
+
+// 写入ch36x的内存
+void ch36xMemWrite(struct ch36xDevEntity * dev, enum CH36xMemModel MemModel, ULONG addr,  ULONG len, unsigned char *writeBuff);//MEM写操作
+// 读取ch36x的内存
+void ch36xMemRead(struct ch36xDevEntity * dev, enum CH36xMemModel MemModel, ULONG addr,  ULONG len, unsigned char *recvBuff);//MEM读操作
+
+// 目前这个接口写值是原封不动的，因为不能都写0, 因此没有开放写入ID的操作，但测试过是可以正常读写的
+void ch36xEEPRomWrite(struct ch36xDevEntity * dev);
+int ch36xEEPRomRead(struct ch36xDevEntity * dev);
+
 
 #ifdef __cplusplus
 }

@@ -95,6 +95,9 @@ SOURCE=.\ch36x_api_rw_helper.cpp
 SOURCE=.\cmdparser.c
 # End Source File
 
+# Begin Source File
+SOURCE=.\main.cpp
+# End Source File
 
 # End Group
 
