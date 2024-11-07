@@ -1,41 +1,10 @@
 #ifndef		_DEBUG368_H
 #define		_DEBUG368_H
-
+#include <windows.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-HINSTANCE mSaveInstance; /* 实例 */
-HWND mSaveDialogMain; /* 主对话框 */
-HWND mSaveDialogI2c; /* I2C对话框 */
-HWND mSaveDialogHelp; /* HELP对话框 */
-
-CHAR mCaptionInform[] = "提示";
-UINT mIndex = 0; /* 设备序号 */
-CHAR flag_open = 0; /* 设备开关标志 */
-mPCH367_IO_REG mBaseAddr; /* I/O空间寄存器 */
-mPCH368_MEM_REG mMemAddr;/*Mem空间寄存器*/
-
-char buffer_open[16];
-char buffer_close[16];
-int CH367=0;
-int CH368=0;
-int intType;//判断是电平中断（1）还是边沿中断（2）
-int Devices[5][2];//用于存储机器中的已有设备
-
-WNDPROC WindowProcedureI2cDid,WindowProcedureI2cVid,WindowProcedureI2cRid,WindowProcedureI2cSdid,\
-		WindowProcedureI2cSvid,WindowProcedureIoAdd,WindowProcedureIoLen,WindowProcedureIoData,\
-		WindowProcedureMemAdd,WindowProcedureMemLen,WindowProcedureMemData,WindowProcedureI2CAdd,\
-		WindowProcedureI2cData,WindowProcedureConAdd,WindowProcedureConData;
-
-typedef struct _VAR_TYPE {
-	union {
-		UCHAR cVar;
-		UINT iVar;
-		USHORT sVar;
-		ULONG lVar;
-	};
-}mVAR_TYPE, *mpVAR_TYPE;
 
 /* 命令码常量定义,请查阅25F512芯片说明书 */
 #define WREN		0x06 /* 写使能指令 */
@@ -54,22 +23,13 @@ typedef struct _VAR_TYPE {
 #define RMDI        0x90 /* 读厂商/设备ID指令 */
 
 #define SPI_BUFFER_LENGTH 0x1000 /* 每次读4096个字节 */
-CHAR SpiFilePath[256] = ""; /* 保存打开文件路径 */
 
 
-unsigned char qbyte = 0;
+
 #define CH367_GPO_SET do{CH367mReadIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], &qbyte); CH367mWriteIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], qbyte |= 0x80);}while(0)
 #define CH367_GPO_CLR do{CH367mReadIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], &qbyte); CH367mWriteIoByte(mIndex, &mBaseAddr->mCH367IoPort[0xF1], qbyte &= 0x7F);}while(0)
 #define WM_INTNOTIFY (WM_USER + 1)
-char irq_buf[100] = "";
-ULONG mCount = 0;//电平中断计数
-ULONG mCount1=0;//边沿中断计数
-UCHAR PulWidth[]={0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e};//脉冲宽度数组
-UCHAR CurPulWidth;//当前脉冲宽度
 
-LRESULT CALLBACK mDialogMain(HWND hDialog, UINT uMessage, WPARAM wParam, LPARAM lParam); // 主对话框事件 
-LRESULT CALLBACK mDialogI2c(HWND hDialog, UINT uMessage, WPARAM wParam, LPARAM lParam); // I2C对话框事件 
-LRESULT CALLBACK mDialogHelp(HWND hDialog, UINT uMessage, WPARAM wParam, LPARAM lParam); // HELP对话框事件 
 void CALLBACK InterruptEvent(void); // 设备中断通知消息 
 void AddrRefresh(HWND hDialog); // 重新取基址
 void mSetI2C(HWND hDialog); // I2C读写

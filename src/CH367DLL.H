@@ -20,7 +20,7 @@
 
 #ifndef		_CH367_DLL_H
 #define		_CH367_DLL_H
-
+#include <windows.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,13 +28,13 @@ extern "C" {
 
 #define		mOFFSET( s, m )			( (ULONG_PTR) & ( ( ( s * ) 0 ) -> m ) )	// 定义获取结构成员相对偏移地址的宏
 
-#ifndef		max
-#define		max( a, b )				( ( ( a ) > ( b ) ) ? ( a ) : ( b ) )	// 较大值
+#ifndef		CH36xMAX
+#define		CH36xMAX( a, b )				( ( ( a ) > ( b ) ) ? ( a ) : ( b ) )	// 较大值
 #endif
 
-#ifndef		min
-#define		min( a, b )				( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )	// 较小值
-#endif
+//#ifndef		CH36xMIN
+//#define		CH36xMIN( a, b )				( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )	// 较小值
+//#endif
 
 #ifdef		ExAllocatePool
 #undef		ExAllocatePool						// 删除带TAG的内存分配
@@ -154,7 +154,7 @@ typedef	struct	_WIN32_COMMAND {				// 定义WIN32命令接口结构
 
 #define		mCH367_MAX_NUMBER		16			// 最多同时连接的CH367数
 
-#define		mMAX_BUFFER_LENGTH		max( sizeof( mCH367_IO_REG ), sizeof( mCH368_MEM_REG ) )	// 数据缓冲区最大长度
+#define		mMAX_BUFFER_LENGTH		CH36xMAX( sizeof( mCH367_IO_REG ), sizeof( mCH368_MEM_REG ) )	// 数据缓冲区最大长度
 
 #define		mMAX_COMMAND_LENGTH		( mWIN32_COMMAND_HEAD + mMAX_BUFFER_LENGTH )	// 最大数据长度加上命令结构头的长度
 

@@ -8,10 +8,43 @@
 #include "CH367DLL.h"
 #include "cmdparser.h"
 #include "ch36x_api_rw_helper.H"
+
 #pragma comment(lib,"CH367DLL.LIB")
 
 // 我们习惯使用的模式
 #define USING_LITTLE_ENDIAN
+
+//CHAR mCaptionInform[] = "提示";
+UINT mIndex = 0; /* 设备序号 */
+CHAR flag_open = 0; /* 设备开关标志 */
+mPCH367_IO_REG mBaseAddr; /* I/O空间寄存器 */
+mPCH368_MEM_REG mMemAddr;/*Mem空间寄存器*/
+
+char buffer_open[16];
+char buffer_close[16];
+int CH367=0;
+int CH368=0;
+int intType;//判断是电平中断（1）还是边沿中断（2）
+int Devices[5][2];//用于存储机器中的已有设备
+
+// CHAR SpiFilePath[256] = ""; /* 保存打开文件路径 */
+
+typedef struct _VAR_TYPE {
+	union {
+		UCHAR cVar;
+		UINT iVar;
+		USHORT sVar;
+		ULONG lVar;
+	};
+}mVAR_TYPE, *mpVAR_TYPE;
+
+
+//unsigned char qbyte = 0;
+char irq_buf[100] = "";
+ULONG mCount = 0;//电平中断计数
+ULONG mCount1=0;//边沿中断计数
+UCHAR PulWidth[]={0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e};//脉冲宽度数组
+UCHAR CurPulWidth;//当前脉冲宽度
 
 void mShowDevVer(void) //获得驱动版本号
 {
@@ -24,7 +57,7 @@ void mShowDevVer(void) //获得驱动版本号
     //  MessageBox(hDialog, "未能成功获得驱动版本号!", "提示", MB_ICONSTOP | MB_OK);
     //}
     ULONG ver = 0;
-    char vers[8];
+    //char vers[8];
     ver = CH367GetDrvVersion();
     printf("CH36x Driver Version :%x\n", ver);
 }
@@ -335,7 +368,7 @@ void ch36xMemRead(enum CH36xMemModel MemModel, ULONG addr,  ULONG len, unsigned 
 
 void ch36xMemWrite(enum CH36xMemModel MemModel, ULONG addr,  ULONG len, unsigned char *writeBuff)//MEM读操作
 {
-    unsigned int i;
+    //unsigned int i;
     ULONG mLen=0,mAddr;
     UCHAR buffer[mMAX_BUFFER_LENGTH]="";
 
@@ -366,7 +399,7 @@ void ch36xMemWrite(enum CH36xMemModel MemModel, ULONG addr,  ULONG len, unsigned
         }
         else
         {
-            MessageBox(NULL,"写成功","提示",MB_OK);
+            //MessageBox(NULL,"写成功","提示",MB_OK);
         }
     }
     else//以双字的方式读写MEM
@@ -396,7 +429,7 @@ static char isReadEERPROM = 0;
 #define EEPROM_INFO_SIZE 0x20
 void ch36xEEPRomRead(void) // 读EEPROM
 {
-    UCHAR i, sByte[8], data[32];
+    UCHAR i, data[32]; // sByte[8]
 
     for(i = 0; i < EEPROM_INFO_SIZE; i++)
     {
@@ -442,7 +475,7 @@ void ch36xEEPRomRead(void) // 读EEPROM
 void ch36xEEPRomWrite(void) //修改VID,DID...
 {
     //mVAR_TYPE mVarType;
-    UCHAR i, data[8], buffer[32];
+    UCHAR i, buffer[32]; //  data[8],
     //UINT Len = 0;
     //USHORT Value = 0;
 
@@ -538,7 +571,7 @@ int testApiFull(int argc, char *argv[])
 {
     int index = 0;
     unsigned int i;
-    ULONG addr, len;
+    //ULONG addr, len;
     unsigned char buff[256];
     ch36xOpenDevice(index);
 
@@ -628,7 +661,6 @@ int main(int argc, char **argv)
     return cmdp_run(argc - 1, argv + 1, &g_command, NULL);
 }
 
-
 unsigned long hexStrToValue(const char *p)
 {
     unsigned long ret;
@@ -664,7 +696,7 @@ static cmdp_action_t callback_function(cmdp_process_param_st *params)
 {
     unsigned long reg, val;
     int index = 0;
-    unsigned int i;
+    // unsigned int i;
     ULONG addr, len;
     unsigned char buff[256];
 
