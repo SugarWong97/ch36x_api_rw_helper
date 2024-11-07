@@ -3,7 +3,7 @@
 A `Windows` program for helping `CH367`/`CH368` PCIe Driver access.
 
 
-## Usaage
+## Usage
 
 exec with this args:
 
@@ -36,12 +36,12 @@ xx.exe -i 0 -f result.txt -a er -r 0x00
 xx.exe -i 0 -f result.txt -a ew -r 0x00  -v 0x00000012
 ```
 
-
 ## For Developers
 
 Build Env (choose one):
 
-- `Visual C++ 6.0` with `ch36x_api_rw_helper.dsw`
+- `Visual C++ 6.0` with `src/ch36x_api_rw_helper.dsw`
+- `MinGW or MSYS2` with `src/Makefile`
+- `Qt5 + MinGW` with `src/ch36x_api_rw_helper.pro`
 
-- `MinGW / MSYS2` with `Makefile`
-
+> File Coding is `ANSI/GBK` .
